@@ -1,0 +1,212 @@
+<!--
+This file is released under the MIT license.
+See LICENSE.md.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>GezzPun: Sudoku</title>
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/clingo.css">
+  <link rel="stylesheet" href="css/sudoku.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3-require@1"></script>
+</head>
+
+<body>
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+      <article class="post">
+
+        <header class="post-header">
+          <h1 class="post-title">GezzPun: Sudoku</h1>
+        </header>
+
+        <div class="post-content">
+          <div>
+
+            <p>
+              This demonstration illustrates how a symbolic AI system
+              (based on the ASP solver <a href="https://potassco.org/clingo/">clingo</a>) can generate Sudoku-like puzzles that are guaranteed to have a unique solution.
+            </p>
+
+            <p>
+              Enter the rules of the puzzle (hint: use the examples),
+              optionally enter some constraints on the puzzle,
+              and click "Run!" to start.
+              The system will try to find a puzzle with a unique solution for about a minute. If it hasn't found one after that, it will give up.
+              Once a puzzle has been found, it will show up on the board.
+            </p>
+
+            <p>&nbsp;</p>
+
+            <p>
+              <b>Your puzzle rules:</b>
+            </p>
+
+            <p>
+              The puzzle is played on a 9 x 9 grid of cells.
+              There are nine values: the numbers 1 through 9.
+              In a solution, each cell gets exactly one value.
+              In the puzzle, some cells have a value given,
+              and a solution completes the assignment to the other cells.
+            </p>
+
+            <p>
+              Enter any additional rules below,
+              using <a href="https://en.wikipedia.org/wiki/Answer_set_programming">answer set programming</a>.
+              (See the <a href="https://github.com/potassco/guide/releases/download/v2.2.0/guide.pdf">clingo guide</a> for detailed instructions on
+              how to use the language.)
+            </p>
+
+            <p>&nbsp;</p>
+
+            <ul class="hlist">
+              <li>
+                Load from example:
+              </li>
+              <li>
+                <select id="examples" onchange="load_example()">
+                  <optgroup label="Simple Examples">
+                    <option value="examples/basic.lp">Traditional Sudoku</option>
+                    <option value="examples/only-row-col.lp">Row and column rules only</option>
+                    <!-- <option value="examples/only-row.lp">Row rules only</option>
+                    <option value="examples/only-col.lp">Column rules only</option> -->
+                  </optgroup>
+                </select>
+              </li>
+            </ul>
+
+            <ul class="hlist">
+              <li>
+                Add rule from examples:
+              </li>
+              <li>
+                <select id="example-rules">
+                  <optgroup label="Simple Examples">
+                    <option value="examples/rule-knight.lp">Knight's move</option>
+                    <!-- <option value="examples/rule-block.lp">Blocks</option> -->
+                    <option value="examples/rule-diagonal.lp">Cross</option>
+                    <!-- <option value="examples/rule-adjacent.lp">Adjacent cells</option> -->
+                    <option value="examples/rule-diag-adjacent.lp">Diagonally adjacent cells</option>
+                  </optgroup>
+                  <optgroup label="Advanced Examples">
+                    <option value="examples/rule-squares.lp">2x2 squares have low sum</option>
+                    <option value="examples/rule-rook-5.lp">No 5's within rook's move</option>
+                    <option value="examples/rule-123.lp">No 1-2-3 in a row</option>
+                    <option value="examples/rule-1234-snake.lp">No 1-2-3-4 as a 'snake'</option>
+                    <!-- <option value="examples/rule-adjacent-subsequent.lp">No subsequent values in adjacent cells</option> -->
+                  </optgroup>
+                </select>
+              </li>
+              <li>
+                <input type="button" value="Add" onclick="add_example_rule()"/>
+              </li>
+            </ul>
+
+            <pre id="input_program"></pre>
+
+<p>&nbsp;</p>
+
+<p>
+  <b>Additional constraints on the puzzle:</b>
+</p>
+
+<p>asdf</p>
+
+<p>&nbsp;</p>
+
+<ul class="hlist">
+  <li>
+    Add constraint from examples:
+  </li>
+  <li>
+    <select id="example-constraints">
+      <optgroup label="Simple Examples">
+        <option value="examples/constraint-block-balance.lp">The blocks are balanced</option>
+        <option value="examples/constraint-no-nines.lp">No 9's filled in</option>
+        <option value="examples/constraint-x-empty.lp">X not filled in</option>
+        <option value="examples/constraint-middle-block-empty.lp">Middle block not filled in</option>
+      </optgroup>
+      <optgroup label="Advanced Examples">
+        <option value="examples/constraint-horiz-sym.lp">Horizontal symmetry</option>
+        <option value="examples/constraint-vert-sym.lp">Vertical symmetry</option>
+      </optgroup>
+    </select>
+  </li>
+  <li>
+    <input type="button" value="Add" onclick="add_example_constraint()"/>
+  </li>
+</ul>
+
+<pre id="constraint_program">
+% At most 30 cells are filled in in the puzzle
+:- not #count { 1,R,C,V : puzzle(R,C,V) } <= 30.</pre>
+
+            <div>&nbsp;</div>
+
+          </div>
+          <div class="center">
+
+            <p>&nbsp;</p>
+
+            <p>
+              <b>Control:</b>
+            </p>
+
+            <input type="button" id="run" value="&#x25ba; Run!" onclick="solve()" disabled/>
+
+            <p>&nbsp;</p>
+
+            <p>(When you click "Run!", your computer will try to find a puzzle with a unique solution for about a minute. If it hasn't found one after that, it will give up.)</p>
+
+            <p>&nbsp;</p>
+
+            <p>
+              <b>Sudoku board:</b>
+            </p>
+
+            <div id="sudoku" class="sudoku-board"></div>
+
+          </div>
+          <div>
+
+            <div>&nbsp;</div>
+
+            <div>
+              <b>Compact puzzle representation:</b>
+            </div>
+
+            <pre id="log" class="log"></pre>
+
+            <div>&nbsp;</div>
+
+            <div>
+              <b>Solver output:</b>
+            </div>
+
+            <pre id="output" class="code"></pre>
+
+          </div>
+        </div>
+
+      </article>
+    </div>
+  </main>
+
+  <script type="text/javascript" src="js/ace.js" charset="utf-8"></script>
+  <script type="text/javascript" src="js/clingo-module.js" charset="utf-8"></script>
+  <script type="text/javascript" src="js/sudoku.js" charset="utf-8"></script>
+  <script type="text/javascript" src="js/interface.js"></script>
+
+</body>
+
+</html>
