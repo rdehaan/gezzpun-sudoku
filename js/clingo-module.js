@@ -187,6 +187,7 @@ currentlyReifying = false;
 currentlyPrecomputing = true;
 function handleModel(line) {
   if (currentlyPrecomputing) {
+    precomputed_solution = "";
     atoms = line.split(" ");
     atoms.forEach(function (atom, index) {
       if (atom.startsWith("solution")) {
